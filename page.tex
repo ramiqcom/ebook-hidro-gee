@@ -2,7 +2,7 @@
 
 \tableofcontents
 
-\section{Introducing spectral indices for built-up}
+\section{Introducing spectral indices for water}
 Spectral indices or spectral index (singular) is a term used to define a result of mathematical operation (map algebra, raster algebra, etc.) of two or more band of spectrum from a multispectral imagery \cite{xue2017significant}.
 
  The most famous one of spectral indices is NDVI (Normalized Difference Vegetation Index). It is the result from the margin of near infrared (NIR) and red band divided by the sum of both, following Equation \ref{eq:ndvi}. This index have many use such as to classify certain land cover: soil, built-up, water, sparse, and dense vegetation. It also can be used to monitor vegetation health and pattern over time. The result of NDVI is an image with a value ranging from -1 to 1 where value below 0 tend to be water, 0 to 0.3 is built-up, soil, and grass while above the 0.4 to be shrub and denser vegetation. Although high value can be used to identify if the vegetation is healthy. Example of the multispectral imagery and NDVI can be seen in Figure \ref{fig:imageNdvi}.
@@ -12,7 +12,7 @@ Spectral indices or spectral index (singular) is a term used to define a result 
 	NDVI = \frac{NIR - RED}{NIR + RED}
 \end{equation}
 
-\begin{figure}
+\begin{figure}[htbp]
 	\label{fig:imageNdvi}
 	\centering
 	\includegraphics[height=40ex]{komposit.png}
@@ -29,412 +29,211 @@ NIR band is used in the formula is following the spectral reflectance curve on h
 	\caption{Spectral reflectance curve of soil, vegetation, and water on multiple electromagnetic spectrum \cite{siegmund2005fernes}}
 \end{figure}
 
-While NDVI is quite famous, spectral indices is not only for vegetation. There are many spectral indices where it used for specific object and case. In indentifying built-up area, there is NDBI (Normalized Difference Built-up Index) \cite{zhang2009bi}. NDBI is using two bands: SWIR and NIR where SWIR is good enough differenciate between built-up and bareland with vegetation. NDBI is calculated using Equation \ref{eq:ndbi}. While NDBI is intended for built-up, it can also be used on purpose and not on purpose on detecting bareland, sand, and soil.
+While NDVI is quite famous and used for vegetation, spectral indices can also be used for many type of objects. NDWI (Normalized Difference Water Index) is one of the indices used to help identify water object \cite{gao1996ndwi}. It used near-infrared (NIR) and green wavelengths. NIR infrared is known to have reflectance on multiple objects (soil and vegetation) and low on water. While, green wavelength is known to reflect highly of water object, even more than blue wavelength. Using the normalized difference between the band follow Equation \ref{eq:ndwi}, it allow us to calculate how wet or closesly resemblance to water the area is.
 
 \begin{equation}
-	\label{eq:ndbi}
-	NIR = \frac{SWIR1 - NIR}{SWIR1 + NIR}
+	\label{eq:ndwi}
+	NDWI = \frac{GREEN - NIR}{GREEN + NIR}
 \end{equation}
 
-In Landsat 8 and 9, NDBI cannot be used directly, sometime it needed additional mask. Water area usually needed to be mask first then NDBI will be applied. If that step is not covered, water could have higher NDBI value than built up like in Figure \ref{fig:ndbi}.
+Figure \ref{fig:ndwi} show the comporison of Landsat NIR-SWIR1-SWIR2 composite and NDWI. It can be seen that water area in Landsat composite, represented in black color is colored white to blue to in NDWI, which it mean it can differenciate between water and other object.
 
 \begin{figure}[htbp]
-	\label{fig:ndbi}
+	\label{fig:ndwi}
 	\centering
-	\includegraphics[width=40ex]{komposit2.png}
-	\includegraphics[width=40ex]{ndbi.png}
-	\caption{Comparison of Landsat NIR-SWIR1-BLUE composite (left) and NDBI (right)}
+	\includegraphics[height=40ex]{komposit.png}
+	\includegraphics[height=40ex]{ndwi.png}
+	\caption{Comparison of Landsat NIR-SWIR1-BLUE composite (left) and NDWI (right)}
 \end{figure}
 
-Other than NDBI, there are many more spectral indices for built-up such as Index-based Built-up Index (IBI) and New Built-up Index (NBI). For more indices, it good to follow this paper \cite{valdiviezo2018built}. The list of built-up indices mentioned in the paper can be read in Table \ref{table:urbanIndices}.
+NDWI is not the only water indices, there are many more such as MNDWI (Modified Normalized Difference Water Index) and NDMI (Normalized Difference Mositure Index). MNDWI is using short wavelength infrared band with following Equation \ref{eq:mndwi}.
 
-\begin{table}[htbp]
-	\centering
-	\caption{List of some built-up spectral indices}
-	\begin{tabular}{ l  l }
-		\hline
+\begin{equation}
+	\label{eq:mndwi}
+	MNDWI = \frac{GREEN - SWIR1}{GREEN + SWIR1}
+\end{equation}
 
-		\textbf{Indices} & \textbf{Formula} \\
-
-		\hline
-
-		Index-based Built-up Index & $IBI = \frac{NDBI - (SAVI + MNDWI)/2}{NDBI - (SAVI + MNDWI)/2}$ \\
-
-		\hline
-		
-		New Built-up Index & $NBI = \frac{RED * SWIR}{NIR}$ \\
-
-		\hline
-
-		Normalized Difference Imprevious Surface Index & $NDISI = \frac{TIR - [WI + NIR + SWIR]/3}{TIR + [WI + NIR + SWIR]/3}$ \\
-
-		\hline
-
-		Band Ratio for Built-up Area & $BRBA = \frac{RED}{SWIR}$ \\
-
-		\hline
-
-		Normalized Difference Built-up Area Index & $NDBAI = \frac{SWIR1 * SWIR2 / GREEN}{SWIR1 + SWIR2 / GREEN}$ \\
-
-		\hline
-		
-		Modified Built-up Index & $MBI = \frac{SWIR2 * RED - NIR^2}{RED + NIR + SWIR2}$ \\
-
-		\hline
-
-		Built-up Extraction Index & $BAEI = \frac{RED + L}{GREEN + SWIR}$ \\
-
-		\hline
-	\end{tabular}
-	\label{table:urbanIndices}
-\end{table}
-
-
-\section{Calculating built-up spectral indices in Google Earth Engine}
+\section{Calculating water spectral indices in Google Earth Engine}
 Google Earth Engine (GEE) is cloud-based geospatial analysis software for global scale and multitemporal data \cite{gorelick2017google}. It is allow user to do analysis online without the need for high computation resources. It is also store many remote sensing data that can be use directly. This allow professionals and academics to utilize for many project and research.
 
 Calculating spectral indices is one method to analyze the landscape using multispectral satellite imagery. This imagery are available in the GEE, so instead of downloading the image then calculate the indices in a GIS software, is it now posibble to do it directly in the cloud. 
 
-In GEE, an imagery or stack of multispectral imagery is represented by \verb|ee.Image| object/class. This object will have several properties such as all the bands of stacked image inside, geometry boundary, date, source, and any other properties. Using the bands available in the \verb|ee.Image|, it is possible to calculate built-up indices. It could be done using mathematical operation such as \verb|add, subtract, multiply, & divide| or using \verb|ee.Image.expression| method where it receive two arguments: the formula in quoted text/string and band map or the definition of the formula's variables. Script \ref{code:expression} show the example to calculate NDBI using Landsat imagery.
+In GEE, an imagery or stack of multispectral imagery is represented by \verb|ee.Image| object/class. This object will have several properties such as all the bands of stacked image inside, geometry boundary, date, source, and any other properties. Using the bands available in the \verb|ee.Image|, it is possible to calculate built-up indices. It could be done using mathematical operation such as \verb|add, subtract, multiply, & divide| or using \verb|ee.Image.expression| method where it receive two arguments: the formula in quoted text/string and band map or the definition of the formula's variables. Script \ref{code:expression} show the example to calculate MNDWI using Landsat composite imagery.
 
-\begin{lstlisting}[language=JavaScript, label={code:expression}, caption={GEE script to calculate NDBI from Landsat 8 OLI imagery}]
-// Importing landsat imagery collection surface reflectance (level 2)
-var landsat8 = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2");
-
-// ee.Geometry object to filter and clip image
-var roi = ee.Geometry({
-  "geodesic": false,
-  "type": "Polygon",
-  "coordinates": [
-    [
-      [
-        110.2833489688428,
-        -7.892826204719211
-      ],
-      [
-        110.4701165469678,
-        -7.892826204719211
-      ],
-      [
-        110.4701165469678,
-        -7.697580101285619
-      ],
-      [
-        110.2833489688428,
-        -7.697580101285619
-      ],
-      [
-        110.2833489688428,
-        -7.892826204719211
-      ]
-    ]
-  ]
-});
-
-// Cloud masking
-function cloudMaskOli(image){
-	var qa = image.select('QA_PIXEL');
-	var dilated = 1 << 1;
-	var cirrus = 1 << 2;
-	var cloud = 1 << 3;
-	var shadow = 1 << 4;
-	var mask = qa.bitwiseAnd(dilated).eq(0)
-		.and(qa.bitwiseAnd(cirrus).eq(0))
-		.and(qa.bitwiseAnd(cloud).eq(0))
-		.and(qa.bitwiseAnd(shadow).eq(0));
-	
-	return image.select(['SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B6', 'SR_B7'], ['B2', 'B3', 'B4', 'B5', 'B6', 'B7']).updateMask(mask);
-}
-
-// Filter the imagery using boundary and date
-var image = landsat8.filterBounds(roi) // Filter by region
-	.filterDate('2023-01-01', '2023-12-31') // Filter by date
-	.map(cloudMaskOli) // Cloud mask
-	.median() // Get the first image from the collection
-	.clip(roi) // Clip the image
-	.multiply(0.0000275).add(-0.2);
-
-// Band map to define the band use for calculation
-var bandMap = {
-	NIR: image.select('B5'),
-	SWIR1: image.select('B6')
-};
-
-// Calculate NDBI
-var ndbi = image.expression('NDBI = (SWIR1 - NIR) / (SWIR1 + NIR)', bandMap);
-
-// Show NDBI to map
-Map.addLayer(ndbi, { min: -1, max: 1, palette: ['blue', 'white', 'red'] }, 'NDBI');
-\end{lstlisting}
-
-\section{Modelling built-up using relational operation}
-NDBI is a raster value ranged -1 to 1 where the higher value mean it could have high probability to be built-up. However sometime using one indices is not enough to determine built-up, so it need another indices to mask that. Using relational operation in GEE, we could determine the condition to decice built-up area. In GEE, relational operation can be done using \verb|lt, lte, gt, gte, eq, neq, and, or|, where each will state if our threshold is lower than (\verb|lt|) or greater than (\verb|gte|) of certain value. Script \ref{code:relational} show how to classify built-up area using relational operation which utilize some indices. It also using Landsat NIR band to mask cloud. The result can be seen in Figure \ref{fig:built}.
-
-\begin{lstlisting}[language=JavaScript, label={code:relational}, caption={GEE Script to Classify Built-up using Relational Operation}]
-// image is the landsat imagery
-// Band map to define the band use for calculation
-var bandMap = {
-	SWIR2: image.select('B7'),
-	SWIR1: image.select('B6'),
-	NIR: image.select('B5'),
-	GREEN: image.select('B3'),
-};
-
-// Calculate MNDWI
-var mdnwi = image.expression('MNDWI = (GREEN - SWIR1) / (GREEN + SWIR1)', bandMap);
-
-// Calculate NBR2
-var nbr2 = image.expression('NBR = (SWIR1 - SWIR2) / (SWIR1 + SWIR2)', bandMap);
-
-// Calculate NDBI
-var ndbi = image.expression('NDBI = (SWIR1 - NIR) / (SWIR1 + NIR)', bandMap);
-
-// Built-up
-var built = ndbi.gt(-0.1).and(mdnwi.lt(0)).and(nbr2.lte(0.2));
-
-// Show land cover
-Map.addLayer(built.selfMask(), { palette: 'lightcoral' }, 'Built-up');
-\end{lstlisting}
-
-\begin{figure}[htbp]
-	\centering
-	\label{fig:built}
-	\includegraphics[width=40ex]{kompositJogja.png}
-	\includegraphics[width=40ex]{built.png}
-	\caption{Image of Yogyakarta composite (NIR-SWIR1-SWIR2) (left) and classified built-up using spectral indices (right)}
-\end{figure}
-
-\section{Modelling urban sprawl using multitemporal data}
-It is possible to model one step further using multitemporal data so that we could model how the built-up have expanded over the years. This usually need a yearly composite which will show cloud masked built-up area. Then we just stacked the multitemporal built-up area where each year have their own number assigned as urban expansion over the years. Script \ref{code:expansion} will help you to do that. The result will shown like Figure \ref{fig:expansion}.
-
-\begin{lstlisting}[language=JavaScript, label={code:expansion}, caption={GEE Script to Model Urban Expansion}]
-// Importing landsat imagery collection surface reflectance (level 2)
+\begin{lstlisting}[language=JavaScript, label={code:expression}, caption={GEE script to calculate NDWI from Landsat 8 and 9 composite}]
+// Landsat 8 and 9 collection
 var landsat8 = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2");
 var landsat9 = ee.ImageCollection("LANDSAT/LC09/C02/T1_L2");
-var landsat5 = ee.ImageCollection("LANDSAT/LT05/C02/T1_L2");
-var landsat7 = ee.ImageCollection("LANDSAT/LE07/C02/T1_L2");
-var landsat4 = ee.ImageCollection("LANDSAT/LT04/C02/T1_L2");
 
-// ee.Geometry object to filter and clip image
-var roi = ee.Geometry({
-  "geodesic": false,
-  "type": "Polygon",
-  "coordinates": [
-    [
-      [
-        110.2833489688428,
-        -7.892826204719211
-      ],
-      [
-        110.4701165469678,
-        -7.892826204719211
-      ],
-      [
-        110.4701165469678,
-        -7.697580101285619
-      ],
-      [
-        110.2833489688428,
-        -7.697580101285619
-      ],
-      [
-        110.2833489688428,
-        -7.892826204719211
-      ]
-    ]
-  ]
-});
-
-// Year list to map
-var yearList = [1990, 1995, 2000, 2005, 2010, 2015, 2020];
-
-// Function to filter
-function filterCol(col, roi, date){
-	return col.filterDate(date[0], date[1]).filterBounds(roi);
-}
-
-// Composite function
-function landsat457(roi, date){
-	var col = filterCol(landsat4, roi, date).merge(filterCol(landsat5, roi, date)).merge(filterCol(landsat7, roi, date));
-	var image = col.map(cloudMaskTm).median().clip(roi);
-	return image;
-}
-
-function landsat89(roi, date){
-	var col = filterCol(landsat8, roi, date).merge(filterCol(landsat9, roi, date));
-	var image = col.map(cloudMaskOli).median().clip(roi);
-	return image;
-}
-
-// Cloud mask
-function cloudMaskTm(image){
-	var qa = image.select('QA_PIXEL');
-	var dilated = 1 << 1;
-	var cloud = 1 << 3;
-	var shadow = 1 << 4;
-	var mask = qa.bitwiseAnd(dilated).eq(0)
-		.and(qa.bitwiseAnd(cloud).eq(0))
-		.and(qa.bitwiseAnd(shadow).eq(0));
-	
-	return image.select(['SR_B1', 'SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B7'], ['B2', 'B3', 'B4', 'B5', 'B6', 'B7']).updateMask(mask);
-}
-
-function cloudMaskOli(image){
-	var qa = image.select('QA_PIXEL');
-	var dilated = 1 << 1;
-	var cirrus = 1 << 2;
-	var cloud = 1 << 3;
-	var shadow = 1 << 4;
-	var mask = qa.bitwiseAnd(dilated).eq(0)
-		.and(qa.bitwiseAnd(cirrus).eq(0))
-		.and(qa.bitwiseAnd(cloud).eq(0))
-		.and(qa.bitwiseAnd(shadow).eq(0));
-	
-	return image.select(['SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B6', 'SR_B7'], ['B2', 'B3', 'B4', 'B5', 'B6', 'B7']).updateMask(mask);
-}
-
-// Generate image per year
-var builtCol = ee.ImageCollection(yearList.map(function(year){
-	var start = ee.Date.fromYMD(year, 1, 1);
-	var end = ee.Date.fromYMD(year, 12, 31);
-	var date = [start, end];
-	
-	// Conditional on landsat collection to use
-	var landsat;
-	if (year < 2014) {
-		landsat = landsat457;
-	} else {
-		landsat = landsat89;
-	}
-	
-	// Create an image composite
-	var image = landsat(roi, date).multiply(0.0000275).add(-0.2);
-	
-	// Show the image
-	Map.addLayer(image, { min: [0.1, 0.05, 0.025], max: [0.4, 0.3, 0.2], bands: ['B5', 'B6', 'B7'] }, 'Landsat_' + year, false);
-	
-	// Band map
-	var bandMap = { 
-		NIR: image.select('B5'), 
-		SWIR: image.select('B6'), 
-		RED: image.select('B4'), 
-		GREEN: image.select('B3'), 
-		BLUE: image.select('B2') 
-	};
-	
-	// Normalized Difference Built-up Index
-	var ndbi = image.expression('(SWIR - NIR) / (SWIR + NIR)', bandMap).rename('NDBI');
-	
-	// Show the NDBI
-	Map.addLayer(ndbi, { min: -1, max: 1, palette: ['blue', 'white', 'red'] }, 'NDBI_' + year, false);
-	
-	// Modified Normalized Difference Water Index
-	var mndwi = image.expression('(GREEN - SWIR) / (GREEN + SWIR)', bandMap).rename('MNDWI');
-	
-	// Show the MNDWI
-	Map.addLayer(mndwi, { min: -1, max: 1, palette: ['red', 'white', 'blue'] }, 'MNDWI_' + year, false);
-	
-	// Built up
-	var built = ee.Image(0).where(ndbi.gt(-0.1).and(mndwi.lte(0)), year)
-		.selfMask()
-		.clip(roi);
-	Map.addLayer(built, { palette: 'lightcoral' }, 'Built-up_' + year, false);
-	
-	// Image area for calculation
-	var area = built.multiply(ee.Image.pixelArea().multiply(0.0001)).rename('area');
-	
-	return built.toUint16().rename('built').addBands(area).set('year', year, 'system:time_start', start);
-}));
-
-// Create dictionary for each year expansion for visualization
-var dict = {
-	'built_class_values': yearList,
-	'built_class_palette': ['800080', '0000FF', '00FFFF', '008000', 'FFFF00', 'FFA500', 'FF0000']
-};
-
-// Create expansion image
-var urbanExpansion = builtCol.select('built').min().set(dict);
-Map.addLayer(urbanExpansion, {}, 'Urban_expansion');
-
-// Create legend for expansion year
-var legend = ui.Panel([ui.Label('Urban expansion')], ui.Panel.Layout.flow('vertical'), { position: 'bottom-left' });
-yearList.map(function(year, index){
-	legend.add(ui.Panel([
-		ui.Label('', { width: '20px', height: '20px', backgroundColor: dict.built_class_palette[index], border: '0.5px solid black' }),
-		ui.Label(year)
-	], ui.Panel.Layout.flow('horizontal')));
-});
-Map.add(legend);
-
-// Create table to show the urban area change
-var areaChart = ui.Chart.image.series(builtCol.select('area'), roi, ee.Reducer.sum(), 30, 'year')
-	.setChartType('AreaChart')
-	.setOptions({
-		title: 'Urban area (Ha)',
-		hAxis: { title: 'Year' },
-		vAxis: { title: 'Area (Ha)' }
-	});
-print(areaChart);
-\end{lstlisting}
-
-\begin{figure}[htbp]
-	\centering
-	\label{fig:expansion}
-	\includegraphics[width=40ex]{urbanExpansion.png}
-	\includegraphics[width=50ex]{urbanArea.png}
-	\caption{Urban expansion area by year (left) and the area changes (right)}
-\end{figure}
-
-\section{Introducing Land Surface Temperature (LST) and land cover}
-Land surface temperature (LST) is the temperature generated when the energy from the sun hit the surface of the earth when touched. It is different than air temperature like in weather news. LST can be retrieved using thermal infared wavelength in multispectral imagery like in Landsat and MODIS. LST have high correlation with the object on the surface of the Earth. Usually greener and wet object have lower LST than dry and barren land although another factor such as climate and atmospheric difference also affected it.
-
-Usind NDVI, the LST usually high in range 0 - 0.3 and keep decreasing the further away from that range as seen in Figure \ref{fig:ndviLst}. It is due the characteristic of vegetation and water that absorb thermal infrared more than bareland. Using this model, we can model what will happen to LST in the future.
-
-\begin{figure}[htbp]
-	\label{fig:ndviLst}
-	\centering
-	\includegraphics[width=90ex]{ndviLst.png}
-	\caption{Relationsip between NDVI and LST}
-\end{figure}
-
-\section{Compositing and preprocessing LST data}
-There are two ways of generating LST data from Landsat: using the surface temperature ready band in level 2 collection or calculate yourself from the raw digital number data using known formula. To use ready to use data, you can select band \verb|ST_B10| in the collection then multiply it by 0.00341802 and add 149 to turn it up into Kelvin like in Script \ref{code:lstReady}. It will show LST like in Figure \ref{fig:lstReady}.
-
-\begin{lstlisting}[language=JavaScript, label={code:lstReady}, caption={GEE Script get LST data}]
-// Importing landsat imagery collection surface reflectance (level 2)
-var landsat8 = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2");
-
-// ee.Geometry object to filter and clip image
-var roi = ee.Geometry({
+// ROI
+var geometry = ee.Geometry({
 	"geodesic": false,
 	"type": "Polygon",
 	"coordinates": [
 		[
 			[
-				110.2833489688428,
-				-7.892826204719211
+				138.25184277142827,
+				-3.0784162244028095
 			],
 			[
-				110.4701165469678,
-				-7.892826204719211
+				138.58692577924077,
+				-3.0784162244028095
 			],
 			[
-				110.4701165469678,
-				-7.697580101285619
+				138.58692577924077,
+				-2.7451378202231855
 			],
 			[
-				110.2833489688428,
-				-7.697580101285619
+				138.25184277142827,
+				-2.7451378202231855
 			],
 			[
-				110.2833489688428,
-				-7.892826204719211
+				138.25184277142827,
+				-3.0784162244028095
 			]
 		]
 	]
 });
 
+// Parameter
+var roi = geometry;
+var start = '2022-01-31';
+var end = '2022-12-31';
+
+// Function for cloud masking
+function cloudMasking(image){
+	var qa = image.select('QA_PIXEL');
+	var dilated = 1 << 1;
+	var cirrus = 1 << 2;
+	var cloud = 1 << 3;
+	var shadow = 1 << 4;
+	var mask = qa.bitwiseAnd(dilated).eq(0)
+		.and(qa.bitwiseAnd(cirrus).eq(0))
+		.and(qa.bitwiseAnd(cloud).eq(0))
+		.and(qa.bitwiseAnd(shadow).eq(0));
+	return image.updateMask(mask).select(['SR_B.*'], ['B1', 'B2', 'B3', 'B4', 'B5', 'B6', 'B7']) // Select only important band
+		.multiply(0.0000275).add(-0.2); // Scale the value to 0 - 1
+}
+
+// Get image from collection
+var image = landsat8.filterBounds(roi) // Filter by geometry
+	.filterDate(start, end) // Filter by date
+	.merge(landsat9.filterBounds(roi).filterDate(start, end)) // Merge with landsat 9 collection
+	.map(cloudMasking) // Apply cloud mask
+	.median() // Median composite
+	.clip(roi); // Clip the image
+
+// Show image
+Map.addLayer(image, { min: [0.1, 0.05, 0.025], max: [0.4, 0.3, 0.2], bands: ['B5', 'B6', 'B7'] }, 'Image');
+
+// Band map
+var bandMap = {
+	SWIR1: image.select('B6'),
+	GREEN: image.select('B3'),
+};
+
+// MNDWI
+var mndwi = image.expression('MNDWI = (GREEN - SWIR1) / (GREEN + SWIR1)', bandMap);
+Map.addLayer(mndwi, { min: -1, max: 1, palette: ['red', 'white', 'blue'] }, 'MNDWI');
+\end{lstlisting}
+
+\section{Modelling water body using relational operation}
+NDWI is an index that show a value from -1 to 1 where value closer to 1 have high probability to be a water and it is fewer when approaching -1. Therefore it is possible to get water body or classify water body using certain threshold of NDWI. The threshold can be changed based on the temporal, region, and type of satellite used. 
+
+In the region of interest, a small section in Papua Island, the value is above 0, it is due to high concentration of sediment in the water. If it in other region that is not considered sediment, the value can be set higher, to not make less watery object to be considered water.
+
+Threshold determination can be done using relational operation in GEE, we could determine the condition to decice built-up area. In GEE, relational operation can be done using \verb|lt, lte, gt, gte, eq, neq, and, or|, where each will state if our threshold is lower than (\verb|lt|) or greater than (\verb|gte|) of certain value. Script \ref{code:relational} show how to classify built-up area using relational operation which utilize some indices. It also using Landsat NIR band to mask cloud. The result can be seen in Figure \ref{fig:water}.
+
+\begin{lstlisting}[language=JavaScript, label={code:relational}, caption={GEE Script to Classify Water using Relational Operation}]
+// Water object
+var water = mndwi.gte(0);
+Map.addLayer(water.selfMask(), { palette: 'blue' }, 'Water');
+\end{lstlisting}
+
+\begin{figure}[htbp]
+	\label{fig:water}
+	\centering
+	\includegraphics[width=50ex]{water.png}
+	\caption{Water object clasified using relational operation of MNDWI}
+\end{figure}
+
+\section{Modelling river change using multitemporal data}
+It is possible to apply the relational operation in multi years to see the river flow change over year. It can done using image collection \verb|ee.ImageCollection| and loop operation using \verb|map|. Each water object in each year can a value using it year where reducer operation \verb|reducer| can do \verb|ee.Reducer.min| method to the collection to put earlier value on top of other data to see the change. Script \ref{code:riverChange} is an example how to do that from year 1990 to 2020. The result will be like Figure \ref{fig:riverChange}.
+
+\begin{lstlisting}[language=JavaScript, label={code:riverChange}, caption={GEE script to model river change}]
+// Landsat 8 and 9 collection
+var landsat4 = ee.ImageCollection("LANDSAT/LT04/C02/T1_L2");
+var landsat5 = ee.ImageCollection("LANDSAT/LT05/C02/T1_L2");
+var landsat7 = ee.ImageCollection("LANDSAT/LE07/C02/T1_L2");
+var landsat8 = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2");
+var landsat9 = ee.ImageCollection("LANDSAT/LC09/C02/T1_L2");
+
+// ROI
+var geometry = ee.Geometry({
+	"geodesic": false,
+	"type": "Polygon",
+	"coordinates": [
+		[
+			[
+				138.25184277142827,
+				-3.0784162244028095
+			],
+			[
+				138.58692577924077,
+				-3.0784162244028095
+			],
+			[
+				138.58692577924077,
+				-2.7451378202231855
+			],
+			[
+				138.25184277142827,
+				-2.7451378202231855
+			],
+			[
+				138.25184277142827,
+				-3.0784162244028095
+			]
+		]
+	]
+});
+
+// Parameter
+var roi = geometry;
+var start = '2022-01-31';
+var end = '2022-12-31';
+
+// Function to filter
+function filterCol(col, roi, date){
+  return col.filterDate(date[0], date[1]).filterBounds(roi);
+}
+
+// Composite function
+function landsat457(roi, date){
+  var col = filterCol(landsat4, roi, date).merge(filterCol(landsat5, roi, date)).merge(filterCol(landsat7, roi, date));
+  var image = col.map(cloudMaskTm).median().clip(roi);
+  return image;
+}
+
+function landsat89(roi, date){
+  var col = filterCol(landsat8, roi, date).merge(filterCol(landsat9, roi, date));
+  var image = col.map(cloudMaskOli).median().clip(roi);
+  return image;
+}
+
 // Cloud mask
+function cloudMaskTm(image){
+  var qa = image.select('QA_PIXEL');
+  var dilated = 1 << 1;
+  var cloud = 1 << 3;
+  var shadow = 1 << 4;
+  var mask = qa.bitwiseAnd(dilated).eq(0)
+    .and(qa.bitwiseAnd(cloud).eq(0))
+    .and(qa.bitwiseAnd(shadow).eq(0));
+  
+  return image.select(['SR_B1', 'SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B7'], ['B2', 'B3', 'B4', 'B5', 'B6', 'B7']).updateMask(mask);
+}
+
 function cloudMaskOli(image){
   var qa = image.select('QA_PIXEL');
   var dilated = 1 << 1;
@@ -446,505 +245,387 @@ function cloudMaskOli(image){
     .and(qa.bitwiseAnd(cloud).eq(0))
     .and(qa.bitwiseAnd(shadow).eq(0));
   
-  return image.select(['SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B6', 'SR_B7'], ['B2', 'B3', 'B4', 'B5', 'B6', 'B7'])
-    .multiply(0.0000275).add(-0.2)
-    .addBands(image.select(['ST_B10'], ['LST']).multiply(0.00341802).add(149).add(-273.15))
-    .updateMask(mask);
+  return image.select(['SR_B2', 'SR_B3', 'SR_B4', 'SR_B5', 'SR_B6', 'SR_B7'], ['B2', 'B3', 'B4', 'B5', 'B6', 'B7']).updateMask(mask);
 }
 
-// Image composte
-var image = landsat8.filterBounds(roi).filterDate('2022-01-01', '2022-12-31').map(cloudMaskOli).median().clip(roi);
+var yearList = [1990, 1995, 2000, 2005, 2010, 2015, 2020];
 
-// Show LST
-Map.addLayer(image, { min: 30, max: 40, palette: ['black', 'purple', 'blue', 'cyan', 'green', 'yellow', 'red'], bands: 'LST' }, 'LST');
+// Generate image per year
+var waterCol = ee.ImageCollection(yearList.map(function(year){
+  var start = ee.Date.fromYMD(year - 1 , 1, 1);
+  var end = ee.Date.fromYMD(year + 1, 12, 31);
+  var date = [start, end];
+  
+  // Conditional on landsat collection to use
+  var landsat;
+  if (year < 2014) {
+    landsat = landsat457;
+  } else {
+    landsat = landsat89;
+  }
+  
+  // Create an image composite
+  var image = landsat(roi, date).multiply(0.0000275).add(-0.2);
+  
+  // Show the image
+  Map.addLayer(image, { min: [0.1, 0.05, 0.025], max: [0.4, 0.3, 0.2], bands: ['B5', 'B6', 'B7'] }, 'Landsat_' + year, false);
+  
+  // Band map
+  var bandMap = { 
+    NIR: image.select('B5'), 
+    SWIR: image.select('B6'), 
+    RED: image.select('B4'), 
+    GREEN: image.select('B3'), 
+    BLUE: image.select('B2') 
+  };
+  
+  // Modified Normalized Difference Water Index
+  var mndwi = image.expression('(GREEN - SWIR) / (GREEN + SWIR)', bandMap).rename('MNDWI');
+  
+  // Show the MNDWI
+  Map.addLayer(mndwi, { min: -1, max: 1, palette: ['red', 'white', 'blue'] }, 'MNDWI_' + year, false);
+  
+  // Built up
+  var water = mndwi.gt(0.1).selfMask().multiply(year).toInt();
+  Map.addLayer(water, { palette: 'blue' }, 'Water_' + year, false);
+  
+  return water.rename('water').set('year', year, 'system:time_start', start);
+}));
 
-// Calcualte NDVI
-var bandMap = {
-  NIR: image.select('B5'),
-  RED: image.select('B4'),
-  SWIR1: image.select('B6'),
-  SWIR2: image.select('B7'),
-  GREEN: image.select('B3')
+// Create dictionary for each year expansion for visualization
+var dict = {
+  'water_class_values': yearList,
+  'water_class_palette': ['800080', '0000FF', '00FFFF', '008000', 'FFFF00', 'FFA500', 'FF0000']
 };
 
-// NDVI group
-var groupNdvi = ee.Image(0).where(ndvi.lte(0), 1)
-  .where(ndvi.gt(0).and(ndvi.lte(0.2)), 1)
-  .where(ndvi.gt(0.2).and(ndvi.lte(0.4)), 2)
-  .where(ndvi.gt(0.4).and(ndvi.lte(0.6)), 3)
-  .where(ndvi.gt(0.6).and(ndvi.lte(0.8)), 4)
-  .where(ndvi.gt(0.8), 5)
-  .selfMask()
-  .rename('group');
+// Create river change iamge
+var riverChange = waterCol.min().set(dict);
+Map.addLayer(riverChange, {}, 'River change');
 \end{lstlisting}
 
 \begin{figure}[htbp]
-	\label{fig:lstReady}
+	\label{fig:riverChange}
 	\centering
-	\includegraphics[width=80ex]{lstReady.png}
-	\caption{LST generated from Landsat 8 Level 2}
+	\includegraphics[width=50ex]{riverChange.png}
+	\caption{River change modelling using multitemporal data}
 \end{figure}
 
-If you want to calculate LST yourself you could use Mono-window algorithm, Split-window algorithm, Planck, and many more. To do it you can follow Script \ref{code:lstProcess}. The result will be LST raster data like Figure \ref{fig:lstMany}.
+\section{Modelling coastline change change using multemporal data}
+Modelling water over time is not only can be used to see the change in the river but any body of water. Using the same principle, this method allow us to model coastline change over the years. Intead of masking the water object, it is the other way around, where we could classify land area, assuming this area is the coast. Script \ref{code:coastlineChange} show you how to model coastline change using Google Earth Engine. The result will look like Figure \ref{fig:coastlineChange}.
 
-\begin{lstlisting}[language=JavaScript, label={code:lstProcess}, caption={GEE Script to calculate LST manually}]
-// Calculate LST manually
-// TOA to radiance
-function toaRadiance(image){
-	var L10 = image.expression('(M * Q) + A', {
-		M: ee.Number(image.get('RADIANCE_MULT_BAND_10')),
-		Q: image.select('B10'),
-		A: ee.Number(image.get('RADIANCE_ADD_BAND_10'))
-	}).rename('B10_Rad');
-	
-	var L11 = image.expression('(M * Q) + A', {
-		M: ee.Number(image.get('RADIANCE_MULT_BAND_11')),
-		Q: image.select('B11'),
-		A: ee.Number(image.get('RADIANCE_ADD_BAND_11'))
-	}).rename('B11_Rad');
-	
-	return image.addBands([L10, L11]);
-}
-
-// TOA to brightness temperature
-function toaBrightnessTemp(image){
-		var T10 = image.expression('K2 / (log((K1 / L) + 1))', {
-		K1: ee.Number(image.get('K1_CONSTANT_BAND_10')),
-		K2: ee.Number(image.get('K2_CONSTANT_BAND_10')),
-		L: image.select('B10_Rad')
-	}).rename('B10_BT');
-	
-		var T11 = image.expression('K2 / (log((K1 / L) + 1))', {
-		K1: ee.Number(image.get('K1_CONSTANT_BAND_11')),
-		K2: ee.Number(image.get('K2_CONSTANT_BAND_11')),
-		L: image.select('B11_Rad')
-	}).rename('B11_BT');
-	
-	
-	return image.addBands([T10, T11]);
-}
-
-// Landsat 8 raw
-var landsat8raw = ee.ImageCollection('LANDSAT/LC08/C02/T1').filterBounds(roi).filterDate('2022-01-01', '2022-12-31');
-
-// Landsat 8 LST
-var landsat8Lst = landsat8raw.map(function(image){
-	// Cloud masking
-	var qa = image.select('QA_PIXEL');
-	var dilated = 1 << 1;
-	var cirrus = 1 << 2;
-	var cloud = 1 << 3;
-	var shadow = 1 << 4;
-	var mask = qa.bitwiseAnd(dilated).eq(0)
-		.and(qa.bitwiseAnd(cirrus).eq(0))
-		.and(qa.bitwiseAnd(cloud).eq(0))
-		.and(qa.bitwiseAnd(shadow).eq(0));
-	
-	image = image.updateMask(mask);
-	
-	// Toa radiance
-	image = toaRadiance(image);
-	
-	// Toa brightness
-	image = toaBrightnessTemp(image);
-	
-	// MWA
-	var mwa = image.expression('((ai * (1 - Ci - Di)) + (((bi * (1 - Ci - Di)) + Ci + Di) * Ti) - (Di * Ta)) / Ci', {
-		ai: -67.355351,
-		bi: 0.458606,
-		Ci: 0.98 * 0.9,
-		Di: image.expression('(1 - ti) * (1 + ((1 + 0.98) * ti))', { ti: 0.95 }),
-		Ti: image.select('B10_BT'),
-		Ta: 288
-	}).add(-273.15).rename('MWA');
-	
-	// SWA
-	var swa = image.expression('B10 + (2.946 * (B10 - B11)) - 0.038', {
-		B10: image.select('B10_BT'),
-		B11: image.select('B11_BT')
-	}).add(-273.15).rename('SWA');
-	
-	// Plank
-	var planck = image.expression('(BT / (1 + (((A * BT) / p) * log(EMIT))))', {
-		BT: image.select('B10_BT'),
-		A: 10.895,
-		p: 1438 * 10000,
-		EMIT: 249.9
-	}).add(-273.15).rename('Planck');
-	
-	return ee.Image([mwa, swa, planck]);
-}).median().clip(roi);
-
-// LST palette
-var lstPalette = ['purple', 'blue', 'cyan', 'green', 'yellow', 'red'];
-Map.addLayer(landsat8Lst.select('MWA'), { min: 20, max: 40, palette: lstPalette }, 'LST MWA');
-Map.addLayer(landsat8Lst.select('SWA'), { min: 20, max: 40, palette: lstPalette }, 'LST SWA');
-Map.addLayer(landsat8Lst.select('Planck'), { min: 20, max: 40, palette: lstPalette }, 'LST Planck');
-\end{lstlisting}
-
-\begin{figure}
-	\label{fig:lstMany}
-	\centering
-	\includegraphics[width=30ex]{lstMwa.png}
-	\includegraphics[width=30ex]{lstSwa.png}
-	\includegraphics[width=30ex]{lstPlanck.png}
-	\caption{LST with multiple algorithms: MWA (left), SWA (center), and Planck (right)}
-\end{figure}
-
-\section{Modelling LST and urban density data}
-We can see the relationship between LST and NDVI but it is also possible to model it using urban density. Urban density index is how dense a built-up area which can be calculated using built-up and its neigborhood average built-up area. Urban density can be generated using convolution or focal operation of built-up area. In GEE, we can utilize \verb|reduceNeighborhood| or \verb|focalMean, focalMode, focalMedian, focalMax, and focalMin| where it will use \verb|ee.Kernel| as the window. To generate urban density index and model it with LST you can follow Script \ref{code:urbanDensity}. Urban density will look like Figure \ref{fig:urbanDensity}.
-
-\begin{lstlisting}[language=JavaScript, label={code:urbanDensity}, caption={GEE Script to model urban density and LST}]
-// Sample for chart
-var sample = image.addBands([ndvi, groupNdvi]).stratifiedSample({
-	numPoints: 100,
-	region: roi,
-	scale: 30,
-	classBand: 'group'
+\begin{lstlisting}[language=JavaScript, label={code:coastlineChange}, caption={GEE script to model coastline change}]
+// Geometry 2
+var geometry2 = ee.Geometry({
+  "geodesic": false,
+  "type": "Polygon",
+  "coordinates": [
+    [
+      [
+        107.93123947814016,
+        -6.347125408772628
+      ],
+      [
+        108.09191452696828,
+        -6.347125408772628
+      ],
+      [
+        108.09191452696828,
+        -6.228367833844507
+      ],
+      [
+        107.93123947814016,
+        -6.228367833844507
+      ],
+      [
+        107.93123947814016,
+        -6.347125408772628
+      ]
+    ]
+  ]
 });
 
-// Chart LST and NDVI
-var chart = ui.Chart.feature.byFeature(sample, 'NDVI', ['LST'])
-	.setChartType('ScatterChart')
-	.setOptions({
-		title: 'NDVI vs LST',
-		dataOpacity: 0.3,
-		hAxis: {
-			title: 'NDVI'
-		},
-		vAxis: {
-			title: 'LST (Celcius)'
-		},
-		trendlines: {
-			0: {
-				type: 'polynomial',
-				opacity: 1,
-				color: 'red',
-				visibleInLegend: true,
-			}
-		}
-	});
-print(chart);
+// Geometry
+var roi = geometry2;
 
-// MDNWI
-var mndwi = image.expression('MNDWI = (GREEN - SWIR2) / (GREEN + SWIR2)', bandMap);
-Map.addLayer(mndwi, { min: -1, max: 1, palette: ['red', 'white', 'blue']}, 'MNDWI', false);
+// Year list
+var yearList = [1990, 1995, 2000, 2005, 2010, 2015, 2020];
 
-// NDBI
-var ndbi = image.expression('NDBI = (SWIR2 - NIR) / (SWIR2 + NIR)', bandMap);
-Map.addLayer(ndbi, { min: -1, max: 1, palette: ['blue', 'white', 'red']}, 'NDBI', false);
+// Generate image per year
+var landCol = ee.ImageCollection(yearList.map(function(year){
+  var start = ee.Date.fromYMD(year - 1 , 1, 1);
+  var end = ee.Date.fromYMD(year + 1, 12, 31);
+  var date = [start, end];
+  
+  // Conditional on landsat collection to use
+  var landsat;
+  if (year < 2014) {
+    landsat = landsat457;
+  } else {
+    landsat = landsat89;
+  }
+  
+  // Create an image composite
+  var image = landsat(roi, date).multiply(0.0000275).add(-0.2);
+  
+  // Show the image
+  Map.addLayer(image, { min: [0.1, 0.05, 0.025], max: [0.4, 0.3, 0.2], bands: ['B5', 'B6', 'B7'] }, 'Landsat_' + year, false);
+  
+  // Band map
+  var bandMap = { 
+    NIR: image.select('B5'), 
+    SWIR: image.select('B6'), 
+    RED: image.select('B4'), 
+    GREEN: image.select('B3'), 
+    BLUE: image.select('B2') 
+  };
+  
+  // Modified Normalized Difference Water Index
+  var mndwi = image.expression('MNDWI = (GREEN - SWIR) / (GREEN + SWIR)', bandMap);
+  
+  // Show the MNDWI
+  //Map.addLayer(mndwi, { min: -1, max: 1, palette: ['red', 'white', 'blue'] }, 'MNDWI_' + year, false);
+  
+  // Built up
+  var land = mndwi.lte(0.1).selfMask().multiply(year).toInt();
+  Map.addLayer(land, { palette: 'burlywood' }, 'Land_' + year, false);
+  
+  return land.rename('land').set('year', year, 'system:time_start', start);
+}));
 
-// NBR2
-var nbr2 = image.expression('NBR2 = (SWIR1 - SWIR2) / (SWIR1 + SWIR2)', bandMap);
-Map.addLayer(nbr2, { min: -1, max: 1, palette: ['red', 'white', 'green']}, 'NBR2', false);
+// Create dictionary for each year expansion for visualization
+var dict = {
+  'land_class_values': yearList,
+  'land_class_palette': ['800080', '0000FF', '00FFFF', '008000', 'FFFF00', 'FFA500', 'FF0000']
+};
 
-// Built-up
-var built = mndwi.lte(0).and(ndbi.gte(-0.5));
-Map.addLayer(built.selfMask(), { palette: 'lightcoral' }, 'Built', false);
-
-// Urban density
-var urbanDensity = built.focalMean(3).reproject('EPSG:4326', null, 30).rename('urban_density');
-Map.addLayer(urbanDensity, { min: 0, max: 1, palette: lstPalette }, 'Urban density');
-
-// Sample
-var sampleDensity = ee.Image([image.select('LST'), urbanDensity, groupNdvi]).stratifiedSample({
-	numPoints: 200,
-	classBand: 'group',
-	scale: 30,
-	region: roi
-}).randomColumn();
-Map.add(legendGradient('Urban density index', { min: 0, max: 1, palette: lstPalette}, 'bottom-right'));
-
-// Chart
-var chartDensity = ui.Chart.feature.byFeature(sampleDensity, 'urban_density', ['LST'])
-	.setChartType('ScatterChart')
-	.setOptions({
-		title: 'Urban density vs LST',
-		dataOpacity: 0.3,
-		hAxis: {
-			title: 'Urban density'
-		},
-		vAxis: {
-			title: 'LST (Celcius)'
-		},
-		trendlines: {
-			0: {
-				type: 'linear',
-				opacity: 1,
-				color: 'red',
-				visibleInLegend: true,
-			}
-		}
-	});
-print(chartDensity);
-
-// Split sample to train and test
-var train = sampleDensity.filter(ee.Filter.lte('random', 0.8));
-var test = sampleDensity.filter(ee.Filter.gt('random', 0.8));
-
-// Linear regression model
-var model = train.reduceColumns(ee.Reducer.linearFit(), ['urban_density', 'LST']);
-var scale = ee.Number(model.get('scale'));
-var offset = ee.Number(model.get('offset'));
-
-// Test model
-var cm = test.map(function(feat){
-	var lst = ee.Number(feat.get('urban_density'))
-		.multiply(scale)
-		.add(offset);
-	return feat.set('prediction', lst);
-});
-
-// Accuracy
-var chartAccuracy = ui.Chart.feature.byFeature(cm, 'LST', ['prediction'])
-	.setChartType('ScatterChart')
-	.setOptions({
-		title: 'LST reference vs prediction (Celcius)',
-		dataOpacity: 0.3,
-		hAxis: {
-			title: 'Reference'
-		},
-		vAxis: {
-			title: 'Prediction'
-		},
-		trendlines: {
-			0: {
-				type: 'linear',
-				opacity: 1,
-				color: 'red',
-				visibleInLegend: true,
-				showR2: true
-			}
-		}
-	});
-print(chartAccuracy);
-
-// Apply model
-var lstPrediction = urbanDensity.multiply(scale).add(offset);
-Map.addLayer(lstPrediction, { min: 20, max: 40, palette: lstPalette }, 'LST prediction from urban density');
+// Costaline change
+var coastlineChange = landCol.max().set(dict);
+Map.addLayer(coastlineChange, {}, 'Coastline change change');
 \end{lstlisting}
 
-In the script, we try to do linear regression between LST and urban density index, the result shows that it have high correlation at Figure \ref{fig:lstUrbanDensityCorrelation}. If we apply the regression, we will have $R^2$ 0.685 at Figure \ref{fig:lstUrbanDensityAccuracy}. Comparison between reference and prediction LST can be seen in \ref{fig:lstReferenceVsPrediction}.
-
-\begin{figure}
-	\label{fig:urbanDensity}
+\begin{figure}[htbp]
+	\label{fig:coastlineChange}
 	\centering
-	\includegraphics[width=80ex]{urbanDensity.png}
-	\caption{Urban density index}
+	\includegraphics[height=40ex]{coastlineChange.png}
+	\caption{Coastline change from multiple years}
 \end{figure}
+
+\section{Introducing remote sensing for coastal and benthic habitat}
+Remote sensing is a tool to observe many phenomenon in the Earth without directly in contact with said phenomenon. Most of remote sensing activity is about natural resources in the land area such as agriculture and forestry. Most famous and publicly used remote sensing satellite is used to said research. However it is also used to observe underwater object, although not the so deep one.
+
+Benthic habitat mapping is one of the type of remote sensing usage to map object underwater. Benthic is a term to describe a region in intertidal zone (zone of tidal between land and sea) (Figure \ref{fig:benthic}). It is the shallow part of the sea where some optical electromagnetic wavelength can still penetrate such as coastal, blue, green, and red band, where it stil can reflect some object as seen in Figure \ref{fig:spectralCurve}.
 
 \begin{figure}[htbp]
-	\label{fig:lstUrbanDensityCorrelation}
+	\label{fig:benthic}
 	\centering
-	\includegraphics[width=90ex]{urbanDensityLstChart.png}
-	\caption{Correlation between LST and urban density index}
+	\includegraphics[height=40ex]{benthic.png}
+	\caption{Benthic zone \cite{nababan2021shallow}}	
 \end{figure}
+
+Object that can be mapped in benthic zone usually are coral reef, seagrass, sand, rubble, and algae. You can visit \url{https://allencoralatlas.org/atlas/#13.12/-8.2993/116.7022} to view Allen Coral Atlas, a global map of coral reef and which also include other benthic habitat.
+
+\section{Sunglint and below surface correction for Sentinel-2 image}
+It is uncommon to map benthic habitat directly, to enchance and expose the benthic habitat more, it usually need certain correction. There are many correction to use like sunglint and below surface correction.
+
+Before correction, it is important to mask the important area, which is the benthic habitat zone. This can be done using water indices like NDWI and MNDWI \cite{gao1995normalized}. Using certain threshold, it can mask the area for further analysis.
+
+Sunglint correction is method to correct the actual reflectance of underwater object that usually covered by high sun beam like in Figure \ref{fig:sunglint}. There are many method to eliminate sunglint but the easiest one is using the subtraction of all visual band with NIR band following Equation \ref{eq:sunglint}.
+
+\begin{equation}
+	\label{eq:sunglint}
+	SR' = SR_v - SR_{NIR}
+\end{equation}
+
+\begin{tabular}{l l l}
+	$SR'$ & $=$ & Corrected sunglint reflectance \\
+	$SR_v$ & $=$ & Visual band reflectance \\
+	$SR_NIR$ & $=$ & NIR band reflectance \\
+\end{tabular}
 
 \begin{figure}[htbp]
-	\label{fig:lstUrbanDensityAccuracy}
+	\label{fig:sunglint}
 	\centering
-	\includegraphics[width=90ex]{accuracyLstUrbanDensity.png}
-	\caption{Regression accuracy using urban density index to predict LST}
+	\includegraphics[height=40ex]{sunglint.jpg}
+	\caption{Sunglint and Sunglint Correction Result \cite{hedley2005simple}}
 \end{figure}
 
-\begin{figure}[htbp]
-	\label{fig:lstReferenceVsPrediction}
-	\centering
-	\includegraphics[width=40ex]{lstReady.png}
-	\includegraphics[width=40ex]{lstPrediction.png}
-	\caption{LST reference (left) vs prediction (right)}
-\end{figure}
+After sunglint correction, it also possible to get the below surface (underwater) reflectance using Coral Atlas method \cite{li2019adaptive}. This method allow us to increase the reflectance of underwater object and certainly help in mapping shallow bathymetry and benthic habitat. Equation \ref{eq:belowSurface} show you how to accomplish that.
 
-\section{Predict future LST using machine learning}
-Able to predict LST using built-up and bareland land cover mean it is also possible to predict LST in the future too. It also possible to add another variables such as elevation and other land cover density. In this part, I will show you how to predict LST in 2023 using data from 2021 and 2022. Then, we compare the result to 2023. You can follow the Script \ref{code:futureLst}.
+\begin{equation}
+	\label{eq:belowSurface}
+	BSR = \frac{SR}{0.52 + 1.7 * SR}
+\end{equation}
 
+\begin{tabular}{l l l}
+	$BSR$ & $=$ & Below surface reflectance \\
+	$SR$ & $=$ & Visual band reflectance \\
+\end{tabular}
 
-\begin{lstlisting}[language=JavaScript, label={code:futureLst}, caption={GEE Script to predict future LST}]
-// Importing landsat imagery collection surface reflectance (level 2)
-var landsat8 = ee.ImageCollection("LANDSAT/LC08/C02/T1_L2");
+The whole step from selecting image, benthic masking, sunglint correction, and below surface reflectance can be followed in Script \ref{code:preprocessing}. We are using Sentinel-2 image, the highest resolution multispetral imagery publicly available where we are only using the 10 meter bands: RGB and NIR. The visualization of each step can be seen in Figure \ref{fig:correction}.
 
-// ee.Geometry object to filter and clip image
-var roi = ee.Geometry({
+\begin{lstlisting}[language=JavaScript, label={code:preprocessing}, caption={GEE script for multiple benthic correction}]
+// Sentine-2 collection
+var s2 = ee.ImageCollection("COPERNICUS/S2_SR_HARMONIZED");
+
+// Geometry data
+var geometry = ee.Geometry({
 	"geodesic": false,
 	"type": "Polygon",
 	"coordinates": [
 		[
 			[
-				110.2833489688428,
-				-7.892826204719211
+				116.67848403575506,
+				-8.314655032688776
 			],
 			[
-				110.4701165469678,
-				-7.892826204719211
+				116.71968276622381,
+				-8.314655032688776
 			],
 			[
-				110.4701165469678,
-				-7.697580101285619
+				116.71968276622381,
+				-8.27303785876449
 			],
 			[
-				110.2833489688428,
-				-7.697580101285619
+				116.67848403575506,
+				-8.27303785876449
 			],
 			[
-				110.2833489688428,
-				-7.892826204719211
+				116.67848403575506,
+				-8.314655032688776
 			]
 		]
 	]
 });
 
-// Predict future built-up bareland
-// Years data for prediction
-var years = [2021, 2022, 2023];
-var yearToPredict = 2023;
+// Parameter
+var roi = geometry;
+var start = '2022-01-01';
+var end = '2022-12-31';
 
-// Elevation data
-var srtm = ee.Image("USGS/SRTMGL1_003").clip(roi);
+// Image
+var image = s2.filterBounds(roi) //Filter by area
+	.filterDate(start, end) // Filter by date
+	.sort('CLOUDY_PIXEL_PERCENTAGE') // Sort by cloud cover percentage
+	.first() // Get the first image
+	.select(['B2', 'B3', 'B4', 'B8']) // Select needed band
+	.clip(roi) // Clip to roi
+	.divide(10000); // Scale 0 - 1
+	
+// Show image
+Map.addLayer(image, { min: 0, max: 0.15, bands: ['B4', 'B3', 'B2'] }, 'Image');
 
-// Years image
-var images = years.map(function(year){
-	var image = landsat8.filterBounds(roi).filterDate(year + '-01-01', year + '-12-31').map(cloudMaskOli).median().clip(roi);
-	
-	// Band map
-	var bandMap = {
-		NIR: image.select('B5'),
-		RED: image.select('B4'),
-		SWIR1: image.select('B6'),
-		SWIR2: image.select('B7'),
-		GREEN: image.select('B3')
-	};
-	
-	// MDNWI
-	var mndwi = image.expression('MNDWI = (GREEN - SWIR2) / (GREEN + SWIR2)', bandMap);
-	//Map.addLayer(mndwi, { min: -1, max: 1, palette: ['red', 'white', 'blue']}, 'MNDWI_' + year, false);
-	
-	// NDBI
-	var ndbi = image.expression('NDBI = (SWIR2 - NIR) / (SWIR2 + NIR)', bandMap);
-	//Map.addLayer(ndbi, { min: -1, max: 1, palette: ['blue', 'white', 'red']}, 'NDBI_' + year, false);
-	
-	// NBR2
-	var nbr2 = image.expression('NBR2 = (SWIR1 - SWIR2) / (SWIR1 + SWIR2)', bandMap);
-	//Map.addLayer(nbr2, { min: -1, max: 1, palette: ['red', 'white', 'green']}, 'NBR2_' + year, false);
-	
-	// NBR
-	var nbr = image.expression('NBR = (NIR - SWIR2) / (NIR + SWIR2)', bandMap);
-	//Map.addLayer(nbr, { min: -1, max: 1, palette: ['red', 'white', 'green']}, 'NBR_' + year, false);
-	
-	// Built-up
-	var built = mndwi.lte(0).and(ndbi.gte(-0.5)).and(nbr.lte(0.2)).rename('built');
-	//Map.addLayer(built, { palette: 'lightcoral' }, 'Built_' + year, false);
-	
-	// Water
-	var water = mndwi.gt(0.1).rename('water');
-	//Map.addLayer(water, { palette: 'lightskyblue' }, 'Water_' + year, false);
-	
-	// Sparse vegetation
-	var sparseVegetation = nbr.gt(0.3).and(nbr.lt(0.6)).rename('sparse_vegetation');
-	//Map.addLayer(sparseVegetation, { palette: 'lightgreen' }, 'SparseVegetation_' + year, false);
-	
-	// Sparse vegetation
-	var denseVegetation = nbr.gt(0.6).rename('dense_vegetation');
-	//Map.addLayer(denseVegetation, { palette: 'darkgreen' }, 'DenseVegetation_' + year, false);
-	
-	// Bareland
-	var bareland =  mndwi.lte(0).and(ndbi.gte(-0.5)).and(nbr2.gt(0.2)).and(nbr.lte(0.3)).rename('bareland');
-	//Map.addLayer(bareland, { palette: 'burlywood' }, 'Bareland_' + year, false);
-
-	
-	return ee.Image([built, water, sparseVegetation, denseVegetation, bareland, image.select('LST')]);
+// NDWI
+var ndwi = image.expression('NDWI = (GREEN - NIR) / (GREEN + NIR)', {
+	NIR: image.select('B8'),
+	GREEN: image.select('B3')
 });
+Map.addLayer(ndwi, { min: -1, max: 1, palette: ['red', 'white', 'blue'] }, 'NDWI');
 
-// Images
-var image2021 = images[0];
-var image2022 = images[1];
+// Benthic mage
+var benthicImage = image.updateMask(ndwi.gt(0));
+Map.addLayer(benthicImage, { min: 0, max: 0.15, bands: ['B4', 'B3', 'B2'] }, 'Benthic Image');
 
-// predictors
-var predictors = ['built', 'bareland', 'water', 'sparse_vegetation', 'dense_vegetation', 'elevation', 'LST_first'];
-var label = 'LST_last';
+// Corrected sunglint
+var sunglintCorrection = benthicImage.select(['B2', 'B3', 'B4'])
+	.subtract(benthicImage.select(['B8']));
+Map.addLayer(sunglintCorrection, { min: 0, max: 0.15, bands: ['B4', 'B3', 'B2'] }, 'Corrected Sunglint Image');
 
+// Below surface reflectance
+var belowSurface = sunglintCorrection.divide(sunglintCorrection.multiply(1.7).add(0.52));
+Map.addLayer(belowSurface, { min: 0, max: 0.15, bands: ['B4', 'B3', 'B2'] }, 'Below surface reflectance');
+\end{lstlisting}
+
+\begin{figure}[htbp]
+	\label{fig:correction}
+	\centering
+	\includegraphics[height=40ex]{benthicImage.png}
+	\includegraphics[height=40ex]{benthicMasked.png}
+	\includegraphics[height=40ex]{sunglintImage.png}
+	\includegraphics[height=40ex]{belowSurface.png}
+	\caption{Surface reflectance image (top-left); Masked using NDWI (top-right); Sunglint corrected (bottom-left); Below surface reflectance (bottom-right)}
+\end{figure}
+
+\section{Bathmetry mapping}
+Using below surface image, it is possible to map bathymetry with some limitation (not so deep ocean). Following paper \cite{li2021automated}, we can calculate the depth of underwater region using Equation \ref{eq:bathymetry}. Follow Script \ref{code:bathymetry} to accomplish that in GEE. The result will be like Figure \ref{fig:bathymetry}.
+
+\begin{equation}
+	\label{eq:bathymetry}
+	Depth = m_0 * \frac{\ln(1000 * BLUE)}{\ln(1000 * GREEN)} - m_1
+\end{equation}
+
+\begin{tabular}{l l l}
+	$Depth$ & $=$ & Sea depth \\
+	$m_0$ & $=$ & $52.073 * e^{0.957 * Chl_a} $ \\
+	$m_1$ & $=$ & $50.156 * e^{0.957 * Chl_a} $ \\
+	$BLUE$ & $=$ & Blue band reflectance \\
+	$GREEN$ & $=$ & Green band reflectance \\
+\end{tabular}
+
+\begin{lstlisting}[language=JavaScript, label={code:bathymetry}, caption={GEE script to map bathymetry}]
+// Calculate depth
+var depth = ee.Image().expression('(m0 * (log(1000 * blue) / log(1000 * green))) - m1', {
+	m0: ee.Number(52.073).multiply(ee.Number(2.71).pow(0.957 * 0.5)),
+	m1: ee.Number(50.156).multiply(ee.Number(2.71).pow(0.957 * 0.5)),
+	blue: belowSurface.select('B2'),
+	green: belowSurface.select('B3')
+}).multiply(-1);
+Map.addLayer(depth, { min: 10, max: -40, palette: ['white', 'lightskyblue', 'blue', 'navy'] }, 'Depth');
+\end{lstlisting}
+
+\begin{figure}[htbp]
+	\label{fig:bathymetry}
+	\centering
+	\includegraphics[height=40ex]{bathymetry.png}
+	\caption{Elevation in meter above sea level}
+\end{figure}
+
+\section{Benthic habitat classification}
+The application of using below surface reflectance imagery, other than bathymetry, can also to map benthic habitat such as coral reef, seagrass, sand, rubble, etc. To do that is almost the same when mapping land cover where you have to take sample, create a machine learning model, do accuracy assessment, and apply the model to the image. 
+
+The huge obstacle usually the ability of interpretator to knwo which habitat is which. This need experience and understading the morphology of benthic zone. Using previous below surface image, we can follow Script \ref{code:classify} to map benthic habitat. The result will look like Figure \ref{fig:classify}.
+
+\begin{lstlisting}[language=JavaScript, label={code:classify}, caption={GEE script to map benthic habitat}]
 // Sample
-var samplePredictionLst = ee.Image([
-	image2021.addBands(srtm).select(
-		['built', 'bareland', 'water', 'sparse_vegetation', 'dense_vegetation', 'elevation', 'LST'], 
-		predictors
-	),
-	image2022.select(['LST'], ['LST_last']),
-	groupNdvi
-]).stratifiedSample({
-	numPoints: 200,
-	scale: 30,
-	classBand: 'group',
-	region: roi
+var sample = ee.FeatureCollection([
+  deep_sea, coral, sand, rubble, seagrass, 
+]).flatten();
+
+// Extract sample
+var extract = belowSurface.sampleRegions({
+  collection: sample,
+  scale: 10,
+  properties: ['classvalue']
 }).randomColumn();
 
-// Split into train and testing
-var trainLst = samplePredictionLst.filter(ee.Filter.lte('random', 0.8));
-var testLst = samplePredictionLst.filter(ee.Filter.gt('random', 0.8));
+// Split train and test
+var train = extract.filter(ee.Filter.lte('random', 0.8));
+var test = extract.filter(ee.Filter.gt('random', 0.8));
 
 // Model
-var modelLst = ee.Classifier.smileRandomForest(50).train(trainLst, label, predictors)
-	.setOutputMode('REGRESSION');
-print(modelLst.explain());
+var model = ee.Classifier.smileRandomForest(50).train(train, 'classvalue', ['B4', 'B3', 'B2']);
 
-// Apply amodel to 2022 to predict 2023
-var lst2023Prediction = image2022.addBands(srtm)
-	.select(
-		['built', 'bareland', 'water', 'sparse_vegetation', 'dense_vegetation', 'elevation', 'LST'],
-		predictors
-	).classify(modelLst, 'LST_prediction_2023');
-Map.addLayer(lst2023Prediction, { min: 20, max: 40, palette: lstPalette }, 'LST prediction 2023', false);
+// Assss model
+var cm = test.classify(model, 'prediction').errorMatrix('classvalue', 'prediction');
+print('Confusion matrix', cm, 'Accuracy', cm.accuracy(), 'Kappa', cm.kappa());
 
-// LST truth 2023
-var lstTruth2023 = images[2].select(['LST'], ['LST_truth_2023']);
-Map.addLayer(lstTruth2023, { min: 20, max: 40, palette: lstPalette }, 'LST reference 2023', false);
+// Legend
+var palette = ['FFC0CB', '7FFFD4', 'FFA500', '006400', '000080'];
+var names = ['Coral', 'Sand', 'Rubble', 'Seagrass', 'Deep sea'];
+var values = [1, 2, 3, 4, 5];
 
-// Accuracy assessment
-var lstAssessment = ee.Image([lstTruth2023, lst2023Prediction, groupNdvi]).stratifiedSample({
-	region: roi,
-	scale: 30,
-	classBand: 'group',
-	numPoints: 200
+// Benthic
+var benthic = belowSurface.classify(model, 'benthic').set({
+  'benthic_class_values': values,
+  'benthic_class_palette': palette
 });
-
-// Chart
-var lstChartPrediction = ui.Chart.feature.byFeature(lstAssessment, 'LST_truth_2023', ['LST_prediction_2023'])
-	.setChartType('ScatterChart')
-	.setOptions({
-		title: 'LST reference vs prediction (Celcius) in 2023',
-		dataOpacity: 0.3,
-		hAxis: {
-			title: 'Reference'
-		},
-		vAxis: {
-			title: 'Prediction'
-		},
-		trendlines: {
-			0: {
-				type: 'linear',
-				opacity: 1,
-				color: 'red',
-				visibleInLegend: true,
-				showR2: true
-			}
-		}
-	});
-print(lstChartPrediction);
+Map.addLayer(benthic, {}, 'Benthic');
 \end{lstlisting}
-	
-	After we predict the future LST in 2023, we can compare it with truth in 2023. Figure \ref{fig:lst2023} show 1 on 1 comparison while \ref{fig:r22023} show how accurate our prediction.
-	
-\begin{figure}[htbp]
-	\label{fig:lst2023}
-	\centering
-	\includegraphics[width=40ex]{lst2023Truth.png}
-	\includegraphics[width=40ex]{lst2023Prediction.png}
-	\caption{Reference (left) and predicted (rigth) LST in 2023}
-\end{figure}
 
 \begin{figure}[htbp]
-	\label{fig:r22023}
+	\label{fig:classify}
 	\centering
-	\includegraphics[width=90ex]{lst2023Accuracy.png}
-	\caption{Accuracy assessment prediction for LST 2023}
+	\includegraphics[height=40ex]{benthicHabitat.png}
+	\caption{Classifierd benthic habitat}
 \end{figure}
+
 \printbibliography
